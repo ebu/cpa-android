@@ -19,6 +19,7 @@ import retrofit.Callback;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
+import retrofit.mime.TypedByteArray;
 
 /**
  * Copyright (c) European Broadcasting Union. All rights reserved.
@@ -110,14 +111,48 @@ public class CpaProvider {
 
                     @Override
                     public void failure(RetrofitError error) {
+                        switch (error.getKind()) {
 
+                            case NETWORK:
+                                listener.failure(new CpaError(CpaError.Kind.NETWORK_ERROR));
+                                break;
+
+                            case HTTP:
+                                if (error.getResponse().getStatus() == 400) {
+                                    String json = new String(((TypedByteArray) error.getResponse().getBody()).getBytes());
+                                    if (json.contains("invalid_client")) {
+                                        listener.failure(new CpaError(CpaError.Kind.INVALID_CLIENT));
+                                    } else {
+                                        listener.failure(new CpaError(CpaError.Kind.INVALID_REQUEST));
+                                    }
+                                }
+                                break;
+
+                            default:
+                                listener.failure(new CpaError(CpaError.Kind.UNKNOWN));
+                                break;
+                        }
                     }
                 });
             }
 
             @Override
             public void failure(RetrofitError error) {
+                switch (error.getKind()) {
 
+                    case NETWORK:
+                        listener.failure(new CpaError(CpaError.Kind.NETWORK_ERROR));
+                        break;
+
+                    case HTTP:
+                        listener.failure(new CpaError(CpaError.Kind.INVALID_REQUEST));
+                        break;
+
+                    default:
+                        listener.failure(new CpaError(CpaError.Kind.UNKNOWN));
+                        break;
+
+                }
             }
         });
     }
@@ -161,6 +196,28 @@ public class CpaProvider {
                     @Override
                     public void failure(RetrofitError error) {
 
+                        switch (error.getKind()) {
+
+                            case NETWORK:
+                                listener.failure(new CpaError(CpaError.Kind.NETWORK_ERROR));
+                                break;
+
+                            case HTTP:
+                                if (error.getResponse().getStatus() == 400) {
+                                    String json = new String(((TypedByteArray) error.getResponse().getBody()).getBytes());
+                                    if (json.contains("invalid_client")) {
+                                        listener.failure(new CpaError(CpaError.Kind.INVALID_CLIENT));
+                                    } else {
+                                        listener.failure(new CpaError(CpaError.Kind.INVALID_REQUEST));
+                                    }
+                                }
+                                break;
+
+                            default:
+                                listener.failure(new CpaError(CpaError.Kind.UNKNOWN));
+                                break;
+                        }
+
                     }
                 });
 
@@ -169,6 +226,21 @@ public class CpaProvider {
             @Override
             public void failure(RetrofitError error) {
 
+                switch (error.getKind()) {
+
+                    case NETWORK:
+                        listener.failure(new CpaError(CpaError.Kind.NETWORK_ERROR));
+                        break;
+
+                    case HTTP:
+                        listener.failure(new CpaError(CpaError.Kind.INVALID_REQUEST));
+                        break;
+
+                    default:
+                        listener.failure(new CpaError(CpaError.Kind.UNKNOWN));
+                        break;
+
+                }
             }
         });
     }
@@ -192,7 +264,7 @@ public class CpaProvider {
 
                 @Override
                 public void failure(RetrofitError error) {
-
+                    listener.failure(new CpaError(CpaError.Kind.EXPIRED));
                 }
             });
         }
@@ -217,7 +289,7 @@ public class CpaProvider {
 
                 @Override
                 public void failure(RetrofitError error) {
-
+                    listener.failure(new CpaError(CpaError.Kind.EXPIRED));
                 }
             });
 
@@ -249,6 +321,12 @@ public class CpaProvider {
                         public void onAssociationComplete() {
                             sendUserTokenRequest(domain, identity, listener);
                         }
+
+                        @Override
+                        public void onAssociationDenied() {
+                            listener.failure(new CpaError(CpaError.Kind.USER_DENIED));
+                        }
+
                     });
 
                     fragment.show(activity.getFragmentManager(), "dialog");
@@ -260,7 +338,29 @@ public class CpaProvider {
 
             @Override
             public void failure(RetrofitError error) {
+                switch (error.getKind()) {
 
+                    case NETWORK:
+                        listener.failure(new CpaError(CpaError.Kind.NETWORK_ERROR));
+                        break;
+
+                    case HTTP:
+                        if (error.getResponse().getStatus() == 400) {
+                            String json = new String(((TypedByteArray) error.getResponse().getBody()).getBytes());
+                            if (json.contains("invalid_client")) {
+                                listener.failure(new CpaError(CpaError.Kind.INVALID_CLIENT));
+                            } else if(json.contains("invalid_request")) {
+                                listener.failure(new CpaError(CpaError.Kind.INVALID_REQUEST));
+                            } else {
+                                listener.failure(new CpaError(CpaError.Kind.SLOW_DOWN));
+                            }
+                        }
+                        break;
+
+                    default:
+                        listener.failure(new CpaError(CpaError.Kind.UNKNOWN));
+                        break;
+                }
             }
         });
     }
