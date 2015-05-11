@@ -22,6 +22,7 @@ public class AssociateDialogFragment extends DialogFragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String URL = "ch.ebu.cpa.fragments.url";
     public static final String REDIRECT_URI = "cpacred://verification";
+    public static final String REDIRECT_DENIED_URI = "user_code:denied";
 
     private String url;
 
@@ -51,6 +52,7 @@ public class AssociateDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setCancelable(false);
         if (getArguments() != null) {
             url = getArguments().getString(URL);
         } else {
@@ -69,7 +71,9 @@ public class AssociateDialogFragment extends DialogFragment {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 if (url.startsWith(REDIRECT_URI)) {
-                    dismissCurrent();
+                    success();
+                } else if (url.startsWith(REDIRECT_DENIED_URI)) {
+                    denied();
                 } else {
                     webView.loadUrl(url);
                 }
@@ -81,13 +85,20 @@ public class AssociateDialogFragment extends DialogFragment {
         return view;
     }
 
-    public void setAssociationCompleteListener( AssociationCompleteListener listener){
+    public void setAssociationCompleteListener(AssociationCompleteListener listener) {
         mListener = listener;
     }
 
-    private void dismissCurrent(){
-        if (mListener != null){
+    private void success() {
+        if (mListener != null) {
             mListener.onAssociationComplete();
+        }
+        dismiss();
+    }
+
+    private void denied() {
+        if (mListener != null) {
+            mListener.onAssociationDenied();
         }
         dismiss();
     }
@@ -98,8 +109,10 @@ public class AssociateDialogFragment extends DialogFragment {
         outState.putString(URL, url);
     }
 
-    public interface AssociationCompleteListener{
+    public interface AssociationCompleteListener {
         void onAssociationComplete();
+
+        void onAssociationDenied();
     }
 
 }
