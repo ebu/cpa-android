@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">CPADemo</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="token">App token</string>
+    <string name="user_token">User token</string>
+    <string name="get_token">Get Token</string>
+    <string name="refresh_token">Refresh Token</string>
+
+    <string-array name="domains">
+        <item>"cpa.rts.ch"</item>
+        <item>"playlist.rts.ch"</item>
+        <item>"unknown.rts.ch"</item>
+    </string-array>
+
+</resources>
